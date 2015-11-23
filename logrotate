@@ -38,7 +38,7 @@ sudo nano /etc/logrotate.d/custom
 
 Issue the following command,the way to run specified logrotate ( and test it ) :
 
-logrotate -vf /etc/logrotate.d/custom
+sudo logrotate -vf /etc/logrotate.d/custom
 Options:
 
 -v :show the process
