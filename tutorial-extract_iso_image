@@ -1,0 +1,24 @@
+First you’ll need to create a folder in which to mount the image, open your command line editor and enter:
+
+sudo mkdir /mnt/iso
+
+Enter you password when asked, and your directory will be created. Now we can mount the file by typing:
+
+sudo mount -o loop <image>.iso /mnt/iso 
+
+if this command fail try this
+
+mount -o loop -t iso9660 <image>.iso /mnt/iso
+
+
+Replace <image> with the location of your .ISO file
+
+copy all the file into a folder 
+
+sudo cp -r /mnt/iso /home/{user}/{folder}
+
+
+after copy all files 
+
+unmount /mnt/iso
+
