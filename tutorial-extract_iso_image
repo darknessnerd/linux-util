@@ -20,5 +20,5 @@ sudo cp -r /mnt/iso /home/{user}/{folder}
 
 after copy all files 
 
-unmount /mnt/iso
-
+sudo unmount /mnt/iso
+sudo rm -r /mnt/iso
