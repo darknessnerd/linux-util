@@ -1,0 +1,26 @@
+
+
+Many people think that once they use a switch for connecting their local network they're safe from network sniffing. Basically this is right because the traditional way of sniffing where a host can read all network packets just by accepting them (the so called "promiscous mode") is not possible.
+
+However there are other means to achieve the same and because maybe some SysAdmins think they're safe from sniffing thus designing their network a bit more open it's even more dangerous.
+
+The tool used here is called arpspoof and is distributed in the dsniff package.
+
+What we do is the following: We constantly send the victim computer ARP answers telling him that the MAC address belonging to the IP of the gateway machine (router) is our MAC address. After some time the victim computer will believe us and makes a wrong entry in his ARP cache. Next time the victim wants to send an IP packet to the gateway he sends the ethernet frame to our MAC address so actually we get the IP packet. We do the same thing with the gateway machine just the other way round.
+RFC 1027 describes the ARP protocol.
+
+In order to tell the victim host that now we (our MAC address) are the one belonging to the IP of the gateway enter the following command:
+# arpspoof -t victim gateway
+
+In a seperate shell we start the matching command to fool gateway to belive we are victim.
+# arpspoof -t gateway victim
+
+Don't forget to enable IP forwarding on your host so that the traffic goes through your host. Otherwise victim will loose connectivity.
+# echo 1 > /proc/sys/net/ipv4/ip_forward
+
+Now watch all the traffic between the victim host and the outside network going through your machine
+# tcpdump host victim and not arp
+
+Frightening easy...
+
+SysAdmins beware of that threat! If you have users on your network you can't trust (e.g. in universities) use tools like arpwatch to monitor the changes of the MAC / IP address tables.
