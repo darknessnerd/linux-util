@@ -1,0 +1,15 @@
+
+Or if you want the actual Google Chrome, open a terminal and follow:
+
+cd /tmp
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb
+sudo dpkg -i google-chrome-stable_current_i386.deb
+
+If you want the 64bit version just replace i386 with amd64
+
+If you encounter any errors simply use
+
+sudo apt-get -f install
+
+To run it from terminal use google-chrome or hit the super key and search Google or Chrome
+ 
