@@ -1,0 +1,32 @@
+If you don’t want to use dconf-editor, or if you use another flavor of Linux, your can use this second method.
+
+Create a .proxy file in your home directory. Have it only read/write-able by yourself, as we will store your credentials in there (including your password).
+
+touch ~/.proxy
+chmod 600 ~/.proxy
+Open it with your favorite text editor and add the following content, replacing username, password, proxy_hostname and proxy_port by their actual values:
+
+# Proxy config
+export http_proxy='username:password@http://proxy_hostname:proxy_port'
+export no_proxy=’localhost,127.0.0.1,.mycompany.lan’
+
+export https_proxy=$http_proxy
+export HTTP_PROXY=$http_proxy
+export HTTPS_PROXY=$http_proxy
+export NO_PROXY=$no_proxy
+With that option, the no_proxy variable let you set a list of IP/mask/domains to ignore. Note that the domain syntax is slightly different than the dconf-editor one: only .mycompany.net withouth any wildcard.
+
+Edit your ~/.profile file and add the following lines, which will load the content of the file we just created when you start your session.
+
+# include proxy config if it exists
+if [ -f $HOME/.proxy ]; then
+    . $HOME/.proxy
+fi
+Log out and log back in, and your proxy settings should be taken into account.
+
+Note that APT does not respect this setup. In order to have it use your proxy, you will have to edit the /etc/apt/apt.conf file (create it if it does not exist) and add the following line:
+
+Acquire::http::Proxy "http://username:password@my.proxy.host:port";
+Optionnal step: if you want your proxy setting to be propagated when you’re using sudo, open the sudo config file with sudo visudo and add the following line after the other Defaults lines:
+
+Defaults    env_keep += "http_proxy https_proxy no_proxy"
