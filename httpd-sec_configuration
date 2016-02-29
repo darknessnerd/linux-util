@@ -427,3 +427,20 @@ Options –Indexes -Includes
 Order allow,deny
 Allow from all
 </Directory>
+
+---------------------------------------------------
+################# X-XSS Protection ################
+---------------------------------------------------
+
+Cross Site Scripting (XSS) protection can be bypassed in many browsers. You can force apply this protection for web application if it was disabled by the user. This is used by majority of giant web companies like Facebook, twitter, Google, etc.
+
+Implementation:
+
+Go to $Web_Server/conf directory
+Open httpd.conf using vi and add following Header directive
+ Header set X-XSS-Protection “1; mode=block”
+ Restart Apache
+Verification:
+
+ Open Firefox and access your application
+ Check HTTP response headers in firebug, you should see XSS Protection is enabled and mode is blocked.
