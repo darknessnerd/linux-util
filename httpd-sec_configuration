@@ -22,3 +22,81 @@ By removing the ETag header, you disable caches and browsers from being able to 
 Entity tags (ETags) are a mechanism to check for a newer version of a cached file. 
 Please don't turn off ETags and Last-Modified headers for your .html files, leave one of them ON. (I use Last-Modified for .html).
 
+----------------------------------------------------------------------
+#######  Protect binary and configuration directory permission #######
+----------------------------------------------------------------------
+
+By default, permission for binary and configuration is 755 that mean any user on server can view the configuration. You can disallow other user to get into conf and bin folder.
+
+Implementation:
+
+Go to $Web_Server directory
+Change permission of bin and conf folder
+ # chmod –R 750 bin conf
+
+----------------------------------------------------------------------
+####### System Settings Protection ###################################
+----------------------------------------------------------------------
+
+In default installation, users can override apache configuration using .htaccess. if you want to stop users changing your apache server settings, you can add AllowOverride to None as shown below. This must be done at root level.
+
+Implementation:
+
+Go to $Web_Server/conf directory
+ Open httpd.conf using vi
+ Search for Directory at root level
+<Directory /> 
+Options -Indexes 
+AllowOverride None
+</Directory>
+ Save the httpd.conf
+ Restart Apache
+ 
+ 
+----------------------------------------------------------------------
+####### Disable Trace HTTP Request ##################################
+----------------------------------------------------------------------
+
+By default Trace method is enabled in Apache web server. Having this enabled can allow Cross Site Tracing attack and potentially giving an option to hacker to steal cookie information. Let’s see how it looks like in default configuration.
+
+ Do a telnet web server IP with listen port
+ Make a TRACE request as shown below
+#telnet localhost 80 
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+TRACE / HTTP/1.1 Host: test
+HTTP/1.1 200 OK
+Date: Sat, 31 Aug 2013 02:13:24 GMT
+Server: Apache
+Transfer-Encoding: chunked
+Content-Type: message/http 20
+TRACE / HTTP/1.1
+Host: test 0
+Connection closed by foreign host.
+#
+As you could see in above TRACE request it has responded my query. Let’s disable it and test it.
+
+Implementation:
+
+ Go to $Web_Server/conf directory
+Add following directive and save the httpd.conf
+ TraceEnable off
+ Restart apache
+Verification:
+
+Do a telnet web server IP with listen port and make a TRACE request as shown below
+#telnet localhost 80
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+TRACE / HTTP/1.1 Host: test
+HTTP/1.1 405 Method Not Allowed
+Date: Sat, 31 Aug 2013 02:18:27 GMT
+Server: Apache Allow:
+Content-Length: 223
+Content-Type: text/html; charset=iso-8859-1 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"> <html><head> <title>405 Method Not Allowed</title> </head><body> <h1>Method Not Allowed</h1>
+<p>The requested method TRACE is not allowed for the URL /.</p> </body></html>
+Connection closed by foreign host.
+#
+As you could see in above TRACE request it has blocked my request with HTTP 405 Method Not Allowed. Now, this web server doesn’t allow TRACE request and help in blocking Cross Site Tracing attack.
