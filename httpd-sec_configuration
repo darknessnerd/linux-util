@@ -444,3 +444,31 @@ Verification:
 
  Open Firefox and access your application
  Check HTTP response headers in firebug, you should see XSS Protection is enabled and mode is blocked.
+ 
+---------------------------------------------------
+#################  Disable HTTP 1.0 Protocol #####
+---------------------------------------------------
+
+When we talk about security, we should protect as much we can. So why do we use older HTTP version of protocol, let’s disable them as well. HTTP 1.0 has security weakness related to session hijacking. We can disable this by using mod_rewrite module.
+
+Implementation:
+
+Ensure to load mod_rewrite module in httpd.conf file
+ Enable RewriteEngine directive as following and add Rewrite condition to allow only HTTP 1.1
+RewriteEngine On
+RewriteCond %{THE_REQUEST} !HTTP/1.1$
+RewriteRule .* - [F]
+
+
+ ---------------------------------------------------
+#################  Timeout value configuration ####
+ ---------------------------------------------------
+
+By default Apache timed-out value is 300 seconds, which can be victim of Slow Loris attack and DoS. To mitigate this you can lower the timeout value to maybe 60 seconds.
+
+Implementation:
+
+Go to $Web_Server/conf directory
+Open httpd.conf using vi
+ Add following in httpd.conf
+ Timeout 60
