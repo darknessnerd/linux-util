@@ -138,3 +138,292 @@ Verification:
 Open Firefox and access your application
 Check HTTP response headers in firebug, you should see X-Frame-Options as shown below.
 
+Share
+Tweet
++1
+Share
+Total Shares 130
+Secure Apache Web Server – Practical Guide
+
+1       Introduction
+
+The Web Server is a crucial part of web-based applications. Apache Web Server is often placed at the edge of the network hence it becomes one of the most vulnerable services to attack. Having default configuration supply many sensitive information which may help hacker to prepare for an attack the web server.
+
+The majority of web application attacks are through XSS, Info Leakage, Session Management and PHP Injection attacks which is due to weak programming code and failure to sanitize web application infrastructure. According to the security vendor Cenzic, 96% of tested applications have vulnerabilities. Below chart from Cenzic shows the vulnerability trend report of 2013.
+
+
+
+This practical guide provides you the necessary skill set to secure Apache Web Server.  In this course, we will talk about how to Harden & Secure Apache Web Server on Unix platform. Following are tested on Apache 2.4.x and I don’t see any reason it won’t work with Apache 2.2.x.
+
+This assumes you have installed Apache on UNIX platform. If not, you can go through Installation guide. You can also refer very free video about how to Install Apache, MySQL & PHP.
+We will call Apache installation directory /opt/apache as $Web_Server throughout this course.
+You are advised to take a backup of existing configuration file before any modification.
+1.1  Audience
+
+This is designed for Middleware Administrator, Application Support, System Analyst, or anyone working or eager to learn Hardening & Security guidelines. Fair knowledge of Apache Web Server & UNIX command is mandatory. This is seven page guide, click on Next to proceed. You may navigate through table of contents at right hand side.
+
+BONUS (Download in PDF Format): Apache HTTP Security & Hardening Guide
+2       Information Leakage
+
+In default Apache configuration you would have many sensitive information disclosure, which can be used to prepare for an attack. It’s one of the most critical tasks for administrator to understand and secure them. As per report by Cenzic, 16% of vulnerability is found in Info leakage. We require some tool to examine HTTP Headers for verification. Let’s do this by install firebug add-on in Firefox.
+
+Open Firefox
+Access https://addons.mozilla.org/en-US/firefox/addon/firebug/
+Click on Add to Firefox
+
+
+ Click on Install Now
+Restart Firefox
+ You can see firebug icon at right top bar
+
+
+We will use this icon to open firebug console to view HTTP Headers information. There are many online tools also available which helps to check in HTTP header information. Below are some of them you can try out. http://tools.geekflare.com/seo/tool.php?id=check-headers
+
+2.1  Remove Server Version Banner
+
+I would say this is one of the first things to consider, as you don’t want to expose what web server version you are using. Exposing version means you are helping hacker to speedy the reconnaissance process. Default configuration will expose Apache Version and OS type as shown below.
+
+ Implementation:
+
+Go to $Web_Server/conf folder
+Modify httpd.conf by using vi editor
+Add following directive and save the httpd.conf
+ServerTokens Prod
+ServerSignature Off
+Restart apache
+ServerSignature will remove the version information from the page generated like 403, 404, 502, etc. by apache web server. ServerTokens will change Header to production only, i.e. Apache
+
+Verification:
+
+Open Firefox
+ Activate firebug by clicking firebug icon at top right side
+ Click on Net tab
+
+
+Hit the URL in address bar
+Expand the GET request and you could see Server directive is just showing Apache, which is much better than exposing version and OS type.
+
+
+2.2  Disable directory browser listing
+
+Disable directory listing in browser so visitor doesn’t see what all file and folders you have under root or sub-directory. Let’s test how does it look like in default settings.
+
+Go to $Web_Server/htdocs directory
+Create a folder and few files inside that
+# mkdir test
+# touch hi
+# touch hello
+Now, let’s try to access Apache by http://localhost/test
+
+ As you could see it reveals what all file/folders you have which is certainly you don’t want to expose.
+
+Implementation:
+
+Go to $Web_Server/conf directory
+ Open httpd.conf using vi
+ Search for Directory and change Options directive to None or –Indexes
+<Directory /opt/apache/htdocs>
+Options None
+Order allow,deny
+Allow from all
+</Directory>
+(or)
+
+<Directory /opt/apache/htdocs>
+Options -Indexes
+Order allow,deny
+Allow from all
+</Directory>
+Restart Apache
+Note: if you have multiple Directory directives in your environment, you should consider doing the same for all.
+
+Verification:
+
+Now, let’s try to access Apache by http://localhost/test
+
+ As you could see, it displays forbidden error instead showing test folder listing.
+
+2.3  Etag
+
+It allows remote attackers to obtain sensitive information like inode number, multipart MIME boundary and child process through Etag header. To prevent this vulnerability, let’s implement it as below. This is required to fix for PCI compliance.
+
+Implementation:
+
+Go to $Web_Server/conf directory
+Add following directive and save the httpd.conf
+FileETag None
+Restart apache
+Verification:
+
+Open Firefox and access your application
+Check HTTP response headers in firebug, you should not see Etag at all.
+
+
+3       Authorization
+
+3.1  Run Apache from non-privileged account
+
+Default apache configuration is to run as nobody or daemon. It’s good to use a separate non-privileged user for Apache. The idea here is to protect other services running in case of any security hole.  
+
+Implementation:
+
+Create a user and group called apache
+#groupadd apache
+# useradd –G apache apache
+Change apache installation directory ownership to newly created non-privileged user
+ # chown –R apache:apache /opt/apache
+ Go to $Web_Server/conf
+ Modify httpd.conf using vi
+ Search for User & Group Directive and change as non-privileged account apache
+User apache 
+Group apache
+ Save the httpd.conf
+ Restart Apache
+Verification:
+
+grep for running http process and ensure it’s running with apache user
+
+# ps –ef |grep http
+ Note: You could see one process is running with root. That’s because Apache is listening on port 80 and it has to be started with root. We will talk about how to change port number later in this course.
+
+3.2  Protect binary and configuration directory permission
+
+By default, permission for binary and configuration is 755 that mean any user on server can view the configuration. You can disallow other user to get into conf and bin folder.
+
+Implementation:
+
+Go to $Web_Server directory
+Change permission of bin and conf folder
+ # chmod –R 750 bin conf
+Verification:  
+
+
+
+3.3  System Settings Protection
+
+In default installation, users can override apache configuration using .htaccess. if you want to stop users changing your apache server settings, you can add AllowOverride to None as shown below. This must be done at root level.
+
+Implementation:
+
+Go to $Web_Server/conf directory
+ Open httpd.conf using vi
+ Search for Directory at root level
+<Directory /> 
+Options -Indexes 
+AllowOverride None
+</Directory>
+ Save the httpd.conf
+ Restart Apache
+3.4  HTTP Request Methods
+
+HTTP 1.1 protocol support many request methods which may not be required and some of them are having potential risk. Typically you may just need GET, HEAD, POST request methods in web application, which can be configured in respective Directory directive. Default apache configuration support OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT method in HTTP 1.1 protocol.
+
+Implementation:
+
+ Go to $Web_Server/conf directory
+ Open httpd.conf using vi
+Search for Directory and add following
+<LimitExcept GET POST HEAD>
+deny from all
+</LimitExcept>
+ 4       Web Application Security
+
+Apache web server misconfiguration or not hardened properly can exploit web application. It’s critical to harden your web server configuration.
+
+4.1  Cookies
+
+ 4.1.1            Disable Trace HTTP Request
+
+By default Trace method is enabled in Apache web server. Having this enabled can allow Cross Site Tracing attack and potentially giving an option to hacker to steal cookie information. Let’s see how it looks like in default configuration.
+
+ Do a telnet web server IP with listen port
+ Make a TRACE request as shown below
+#telnet localhost 80 
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+TRACE / HTTP/1.1 Host: test
+HTTP/1.1 200 OK
+Date: Sat, 31 Aug 2013 02:13:24 GMT
+Server: Apache
+Transfer-Encoding: chunked
+Content-Type: message/http 20
+TRACE / HTTP/1.1
+Host: test 0
+Connection closed by foreign host.
+#
+As you could see in above TRACE request it has responded my query. Let’s disable it and test it.
+
+Implementation:
+
+ Go to $Web_Server/conf directory
+Add following directive and save the httpd.conf
+ TraceEnable off
+ Restart apache
+Verification:
+
+Do a telnet web server IP with listen port and make a TRACE request as shown below
+#telnet localhost 80
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+TRACE / HTTP/1.1 Host: test
+HTTP/1.1 405 Method Not Allowed
+Date: Sat, 31 Aug 2013 02:18:27 GMT
+Server: Apache Allow:
+Content-Length: 223
+Content-Type: text/html; charset=iso-8859-1 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"> <html><head> <title>405 Method Not Allowed</title> </head><body> <h1>Method Not Allowed</h1>
+<p>The requested method TRACE is not allowed for the URL /.</p> </body></html>
+Connection closed by foreign host.
+#
+As you could see in above TRACE request it has blocked my request with HTTP 405 Method Not Allowed. Now, this web server doesn’t allow TRACE request and help in blocking Cross Site Tracing attack.
+
+4.1.2            Set cookie with HttpOnly and Secure flag
+
+You can mitigate most of the common Cross Site Scripting attack using HttpOnly and Secure flag in cookie. Without having HttpOnly and Secure, it is possible to steal or manipulate web application session and cookies and it’s dangerous.
+
+Implementation:
+
+ Ensure mod_headers.so is enabled in your httpd.conf
+ Go to $Web_Server/conf directory
+ Add following directive and save the httpd.conf
+ Header edit Set-Cookie ^(.*)$ $1;HttpOnly;Secure
+ Restart apache
+Verification:
+
+Open Firefox and access your application
+Check HTTP response headers in firebug, you should see Set-Cookie is flagged with HttpOnly and Secure as shown below.
+
+
+4.2  Clickjacking Attack
+
+Clickjacking is well known web application vulnerabilities. You can refer my previous post Secure Your Web Site from Clickjacking Attack.
+
+Implementation:
+
+ Ensure mod_headers.so is enabled in your httpd.conf
+ Go to $Web_Server/conf directory
+ Add following directive and save the httpd.conf
+ Header always append X-Frame-Options SAMEORIGIN
+ Restart apache
+Verification:
+
+Open Firefox and access your application
+Check HTTP response headers in firebug, you should see X-Frame-Options as shown below.
+
+--------------------------------------------------------
+############  Server Side Include ######################
+--------------------------------------------------------
+
+Server Side Include (SSI) has a risk in increasing load on the server. If you have shared environment and heavy traffic web applications you should consider disable SSI by adding Includes in Options directive. SSI attack allows the exploitation of a web application by injecting scripts in HTML pages or executing codes remotely.
+
+Implementation:
+
+Go to $Web_Server/conf directory
+ Open httpd.conf using vi
+ Search for Directory and add Includes in Options directive
+<Directory /opt/apache/htdocs>
+Options –Indexes -Includes
+Order allow,deny
+Allow from all
+</Directory>
