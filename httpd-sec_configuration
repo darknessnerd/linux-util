@@ -118,3 +118,23 @@ Verification:
 
 Open Firefox and access your application
 Check HTTP response headers in firebug, you should see Set-Cookie is flagged with HttpOnly and Secure as shown below.
+
+
+---------------------------------------------
+###### Clickjacking Attack #################
+--------------------------------------------
+
+Clickjacking is well known web application vulnerabilities. You can refer my previous post Secure Your Web Site from Clickjacking Attack.
+
+Implementation:
+
+ Ensure mod_headers.so is enabled in your httpd.conf
+ Go to $Web_Server/conf directory
+ Add following directive and save the httpd.conf
+ Header always append X-Frame-Options SAMEORIGIN
+ Restart apache
+Verification:
+
+Open Firefox and access your application
+Check HTTP response headers in firebug, you should see X-Frame-Options as shown below.
+
