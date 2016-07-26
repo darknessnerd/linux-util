@@ -1,0 +1,11 @@
+aircrack 
+-------------
+First install these needed packages:
+
+$ sudo apt-get install build-essential libssl-dev subversion checkinstall
+Next, run the following commands.
+$ svn co http://svn.aircrack-ng.org/trunk aircrack-ng
+$ cd aircrack-ng
+$ make
+
+$ sudo checkinstall --fstrans=no
