@@ -13,3 +13,11 @@ remove the first 41 character from the file name:
 rename *.COMPLETED files without '.COMPLETED' string 
  for file in *.completed; do mv "$file" "${file/.completed/}"; done 
  
+
+mvn versions:set -DnewVersion=2.50.1-SNAPSHOT
+
+mvn versions:revert
+
+poi se sbagli nome
+
+mvn versions:commit per confermarla
