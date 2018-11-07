@@ -1,0 +1,99 @@
+Il servizio No-IP fornisce sottodomini gratuiti con un tempo di vita basso (a partire da 10 secondi).
+
+La missione di No-IP è fornire i servizi che sono utili, affidabili, e forti per aiutare gli utenti domestici, sia le piccole che le grandi aziende.
+
+PRE-REQUISITI
+Account attivo su NO-IP con gli host definiti.
+
+Raspberry PI 2 o PI 3 con installato il Raspbian
+
+INSTALLAZIONE  E CONFIGURAZIONE
+Di seguito la procedura di installazione del client NO-IP su Raspberry.
+
+Per prima cosa creiamo la cartella dove metteremo l’agent con il comando:
+
+
+mkdir /home/pi/noip2
+1
+mkdir /home/pi/noip2
+In primo luogo scaricare il codice sorgente dal mirror ufficiale con il comando:
+
+
+sudo wget http://www.no-ip.com/client/linux/noip-duc-linux.tar.gz
+1
+sudo wget http://www.no-ip.com/client/linux/noip-duc-linux.tar.gz
+Estrarre l’archivio scaricato con il comando:
+
+
+tar vzxf noip-duc-linux.tar.gz
+1
+tar vzxf noip-duc-linux.tar.gz
+Estratto l’archivio posizionarsi all’interno della cartella con il comando: (il nome della cartella può essere diverso in base alla versione scaricata):
+
+
+cd noip-2.1.9-1
+1
+cd noip-2.1.9-1
+Ora compiliamo il tutto con il comando:
+
+
+sudo make
+sudo make install
+1
+2
+sudo make
+sudo make install
+Durante “make install” ti verranno chiesti nome utente o mail No-IP, password e intervallo di aggiornamento in minuti (di Default è impostato a 30 minuti).
+
+Dopo la compilazione riuscita è possibile eseguire il client.
+
+
+sudo noip2
+1
+sudo noip2
+Per avviare il client No-IP all’avvio, dobbiamo intervenire sul crontab lanciando il comando:
+
+
+sudo nano /etc/rc.local
+1
+sudo nano /etc/rc.local
+Aggiungere la riga seguente al fondo del file.
+
+
+/usr/local/bin/noip2
+1
+/usr/local/bin/noip2
+Chiudere il file e salvarlo.
+
+Per interrompere il client No-IP possiamo utilizzare il comando:
+
+
+sudo killall noip2
+1
+sudo killall noip2
+Per lanciare una nuova configurazione dell’agent NO-IP utilizziamo il comando:
+
+
+noip2 -S
+1
+noip2 -S
+Per avviare il client NO-IP utilizzare il comando:
+
+
+noip2
+1
+noip2
+oppure
+
+
+/usr/local/bin/noip2
+1
+/usr/local/bin/noip2
+Per visualizzare la configurazione dell’agent lanciare il comando:
+
+
+sudo /usr/local/bin/noip2 -C
+1
+sudo /usr/local/bin/noip2 -C
+ 
+
