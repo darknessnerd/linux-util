@@ -1,0 +1,2 @@
+This command execute a command in the container 
+lxc-attach -n myContainer -- ls -lh /home
