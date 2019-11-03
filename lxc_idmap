@@ -1,0 +1,36 @@
+Having a bit of trouble attempting to enable users of a group within a container to write to a bind mount. I'm on Proxmox 5.1 and created a standard Ubuntu 17.10 container from the available template. I tried using the PVE page on unprivileged containers as a guide in attempting to enable write access and took the following steps:
+
+    In /etc/pve/lxc/100.conf I added mp0: /vdata/media,mp=/media
+    Changed the container UID mapping in the file /etc/pve/lxc/100.conf:
+
+Code:
+
+lxc.idmap = u 0 100000 2000
+lxc.idmap = g 0 100000 2000
+lxc.idmap = u 2000 2000 1
+lxc.idmap = g 200 2000 1
+lxc.idmap = u 2001 102001 63535
+lxc.idmap = g 2001 102001 63535
+
+    Added root:2000:1 to /etc/subuid and /etc/subgid on host to allow root to use the uid/gid in the container
+    Created a new group called container-data and add root to the group:
+    Code:
+
+    addgroup --gid 2000 container-data
+    usermod -aG container-data root
+
+    Change group ownership on the host directory to container-data
+    Code:
+
+    chgrp -R container-data /vdata/media
+    chmod g+w /vdata/media
+    chmod g+s /vdata/media
+
+    Inside the container, created a container-data group with the same GID and added users to it:
+    Code:
+
+    addgroup --gid 2000 container-data
+    usermod -aG container-data root
+    usermod -aG container-data service
+    usermod -aG container-data david
+
